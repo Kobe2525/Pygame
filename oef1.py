@@ -1,6 +1,5 @@
 # Example file showing a basic pygame "game loop"
 import pygame
-#fortnite
 # pygame setup
 pygame.init()
 screen = pygame.display.set_mode((1280, 720))
