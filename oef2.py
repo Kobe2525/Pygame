@@ -20,23 +20,32 @@ class Player:
         self.playerx = 0
         self.playery = 0
         self.playerState = 0
+        self.circle = 0
     
     def Up(self):
         self.playery -=10
+        self.circle = 0
 
     def Down(self):
         self.playery +=10
+        self.circle = 1
+        
 
     def Right(self):
         self.playerx +=10
+        self.circle = 0
 
     def Left(self):
         self.playerx -=10
+        self.circle = 0
 
     def Blit(self):
         print("x = ",self.playerx)
         print("y = ",self.playery)
         self.Change()
+        if self.circle == 1:
+            pygame.draw.circle(screen, (0, 0, 255), (self.playerx, self.playery), 10)  # Green circle for the second image (Hond)
+        
         
         screen.blit(self.player, (self.playerx, self.playery))
 
@@ -47,8 +56,7 @@ class Player:
             self.player = self.player2
 
 def Change():
-    global hond, hondA, hondB
-    state = 0
+    global hond, hondA, hondB, state
     if state == 0:
         hond=hondA
     elif state == 1:
@@ -60,6 +68,7 @@ def Change():
 hondA = Player('Dog.jfif','Dog2.jfif')
 hondB = Player('Dog3.webp','Dog4.webp')
 hond = hondA
+state = 0
 
 while running:
     # Poll for events
@@ -81,7 +90,6 @@ while running:
     if keys[pygame.K_RIGHT]:
         hond.Right()
     if keys[pygame.K_r]:
-        
         Change()
     hond.Blit()
     
