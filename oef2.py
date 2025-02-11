@@ -58,18 +58,31 @@ class Player:
     def Blit(self):
         # print("x = ",self.playerx)
         # print("y = ",self.playery)
-        self.Change()
+        self.CheckLocation()
         if self.circle == 1:
             pygame.draw.circle(screen, (0, 0, 255), (self.playerx, self.playery), 10)  # Green circle for the second image (Hond)
 
 
         screen.blit(self.player, (self.playerx, self.playery))
 
-    def Change(self):
+    def CheckLocation(self):
         if self.playerx <= ((ScreenSize[0]/2)-(ScreenSize[1]/8)):
             self.player = self.player1
         elif self.playerx > ((ScreenSize[0]/2)-(ScreenSize[1]/8)):
             self.player = self.player2
+
+        if self.playerx >= ((ScreenSize[0])-((ScreenSize[1]/4))):
+            self.playerx = ScreenSize[0]-(ScreenSize[1]/4)
+        elif self.playerx <= 0:
+            self.playerx = 0
+
+        if self.playery >= ((ScreenSize[1])-((ScreenSize[1]/4))):
+            self.playery = ScreenSize[1]-(ScreenSize[1]/4)
+        elif self.playery <= 0:
+            self.playery = 0
+
+        print(self.playerx)
+        print((ScreenSize[0])-((ScreenSize[0]/4)))
 
 def Change():
     global hond, hondA, hondB, state
@@ -106,7 +119,7 @@ def Move():
             hond.Left()
         elif MoveState == 'Right':
             hond.Right()
-        print(MoveState)
+        #print(MoveState)
         time.sleep(0.052)
 
 hondA = Player('Dog.jfif','Dog2.jfif',ScreenSize)
@@ -124,7 +137,7 @@ try:
             if event.type == pygame.QUIT:
                 running = False
             if event.type == pygame.JOYBUTTONDOWN:
-                print(f"Motion on joystick {event.instance_id}")
+                #print(f"Motion on joystick {event.instance_id}")
                 if event.button == 1:
                     if event.value > 0.5:
                         Change()
@@ -156,8 +169,8 @@ try:
         try:
             JoystickAxis()
         except:
-            print("No Joysticks connected")
-        
+            #print("No Joysticks connected")
+            pass
 
 
         hond.Blit()
