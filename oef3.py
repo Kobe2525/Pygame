@@ -66,11 +66,6 @@ class Player:
         screen.blit(self.player, (self.playerx, self.playery))
 
     def CheckLocation(self):
-        if self.playerx <= ((ScreenSize[0]/2)-(ScreenSize[1]/8)):
-            self.player = self.player1
-        elif self.playerx > ((ScreenSize[0]/2)-(ScreenSize[1]/8)):
-            self.player = self.player2
-
         if self.playerx >= ((ScreenSize[0])-((ScreenSize[1]/4))):
             self.playerx = ScreenSize[0]-(ScreenSize[1]/4)
         elif self.playerx <= 0:
