@@ -74,6 +74,19 @@ def Change():
     if state == 2:
         state = 0
 
+def JoystickAxis():
+    y = joystick.get_axis(0)
+    x = joystick.get_axis(1)
+    if y > 0.5:
+        hond.Down()
+    elif y < -0.5:
+        hond.Up()
+    if x > 0.5:
+        hond.Right()
+    elif x < -0.5:
+        hond.Left()
+            
+
 hondA = Player('Dog.jfif','Dog2.jfif')
 hondB = Player('Dog3.webp','Dog4.webp')
 hond = hondA
@@ -85,18 +98,13 @@ while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
-        elif event.type == pygame.JOYAXISMOTION:
+        elif event.type == pygame.JOYBUTTONDOWN:
             print(f"Motion on joystick {event.instance_id}")
-            if event.axis == 1:
+            if event.button == 1:
                 if event.value > 0.5:
-                    hond.Down()
+                    Change()
                 elif event.value < -0.5:
-                    hond.Up()
-            elif event.axis == 0:
-                if event.value > 0.5:
-                    hond.Right()
-                elif event.value < -0.5:
-                    hond.Left()
+                    pass
             
 
         
@@ -116,13 +124,15 @@ while running:
         hond.Right()
     if keys[pygame.K_r]:
         Change()
+
+    try:
+        JoystickAxis()
+    except:
+        print("No Joysticks connected")
     
   
 
     hond.Blit()
-    
-    print("y = ",joystick.get_axis(1))
-    print("x = ",joystick.get_axis(0))
     # Flip the display to put your work on screen
     pygame.display.flip()
     time.sleep(0.02)
