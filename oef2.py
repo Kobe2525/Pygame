@@ -12,8 +12,8 @@ if pygame.joystick.get_count() > 0:
     joystick = pygame.joystick.Joystick(0)
     joystick.init()
 
-
-screen = pygame.display.set_mode((640, 360))
+ScreenSize = (1500, 800)
+screen = pygame.display.set_mode(ScreenSize)
 running = True
 
 
@@ -21,12 +21,12 @@ running = True
 
 
 class Player:
-    def __init__(self, image_path, image2_path):
+    def __init__(self, image_path, image2_path, screensize):
 
         self.player1 = pygame.image.load(image_path)
-        self.player1 = pygame.transform.scale(self.player1, (200, 200))
+        self.player1 = pygame.transform.scale(self.player1, ((screensize[1]/4),(screensize[1]/4)))
         self.player2 = pygame.image.load(image2_path)
-        self.player2 = pygame.transform.scale(self.player2, (200, 200))
+        self.player2 = pygame.transform.scale(self.player2, ((screensize[1]/4),(screensize[1]/4)))
         self.player = self.player1
         self.playerx = 0
         self.playery = 0
@@ -66,9 +66,9 @@ class Player:
         screen.blit(self.player, (self.playerx, self.playery))
 
     def Change(self):
-        if self.playerx <= 600:
+        if self.playerx <= ((ScreenSize[0]/2)-(ScreenSize[1]/8)):
             self.player = self.player1
-        elif self.playerx >600:
+        elif self.playerx > ((ScreenSize[0]/2)-(ScreenSize[1]/8)):
             self.player = self.player2
 
 def Change():
@@ -107,10 +107,10 @@ def Move():
         elif MoveState == 'Right':
             hond.Right()
         print(MoveState)
-        time.sleep(0.2)
+        time.sleep(0.052)
 
-hondA = Player('Dog.jfif','Dog2.jfif')
-hondB = Player('Dog3.webp','Dog4.webp')
+hondA = Player('Dog.jfif','Dog2.jfif',ScreenSize)
+hondB = Player('Dog3.webp','Dog4.webp',ScreenSize)
 hond = hondA
 state = 0
 
