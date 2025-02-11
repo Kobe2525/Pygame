@@ -1,4 +1,5 @@
 import pygame
+import threading
 import time
 
 # pygame setup
@@ -18,6 +19,7 @@ running = True
 
 
 
+
 class Player:
     def __init__(self, image_path, image2_path):
 
@@ -30,6 +32,7 @@ class Player:
         self.playery = 0
         self.playerState = 0
         self.circle = 0
+        self.MoveState = 'Right'
 
     def Up(self):
         self.playery -=10
@@ -47,6 +50,10 @@ class Player:
     def Left(self):
         self.playerx -=10
         self.circle = 0
+    
+    def MoveStateF(self,HelpA):
+        self.MoveState = HelpA
+
 
     def Blit(self):
         # print("x = ",self.playerx)
@@ -75,68 +82,90 @@ def Change():
         state = 0
 
 def JoystickAxis():
+    global MoveState
     y = joystick.get_axis(0)
     x = joystick.get_axis(1)
     if y > 0.5:
-        hond.Down()
+        MoveState = 'Down'
     elif y < -0.5:
-        hond.Up()
+        MoveState = 'Up'
     if x > 0.5:
-        hond.Right()
+        MoveState = 'Right'
     elif x < -0.5:
-        hond.Left()
+        MoveState = 'Left'
             
+def Move():
+    global running 
+    while running:
+        MoveState = hond.MoveState
+        if MoveState == 'Up':
+            hond.Up()
+        elif MoveState == 'Down':
+            hond.Down()
+        elif MoveState == 'Left':
+            hond.Left()
+        elif MoveState == 'Right':
+            hond.Right()
+        print(MoveState)
+        time.sleep(0.2)
 
 hondA = Player('Dog.jfif','Dog2.jfif')
 hondB = Player('Dog3.webp','Dog4.webp')
 hond = hondA
 state = 0
 
-while running:
-    
-    # Poll for events
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            running = False
-        elif event.type == pygame.JOYBUTTONDOWN:
-            print(f"Motion on joystick {event.instance_id}")
-            if event.button == 1:
-                if event.value > 0.5:
+t1 = threading.Thread(target=Move, args=())
+t1.start()
+try:
+    while running:
+
+        # Poll for events
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+            if event.type == pygame.JOYBUTTONDOWN:
+                print(f"Motion on joystick {event.instance_id}")
+                if event.button == 1:
+                    if event.value > 0.5:
+                        Change()
+                    elif event.value < -0.5:
+                        pass
+            
+            if event.type == pygame.KEYDOWN:
+                keys = pygame.key.get_pressed()
+                if keys[pygame.K_UP]:
+                    hond.MoveStateF('Up')
+                if keys[pygame.K_DOWN]:
+                    hond.MoveStateF('Down')
+                if keys[pygame.K_LEFT]:
+                    hond.MoveStateF('Left')
+                if keys[pygame.K_RIGHT]:
+                    hond.MoveStateF('Right')
+                if keys[pygame.K_r]:
                     Change()
-                elif event.value < -0.5:
-                    pass
+                        
+
             
 
+        # Fill the screen with a color to wipe away anything from last frame
+        screen.fill("Green")
+        # Handle key presses
+
+
+
+        try:
+            JoystickAxis()
+        except:
+            print("No Joysticks connected")
         
 
-    # Fill the screen with a color to wipe away anything from last frame
-    screen.fill("Green")
-    # Handle key presses
 
-    keys = pygame.key.get_pressed()
-    if keys[pygame.K_UP]:
-        hond.Up()
-    if keys[pygame.K_DOWN]:
-        hond.Down()
-    if keys[pygame.K_LEFT]:
-        hond.Left()
-    if keys[pygame.K_RIGHT]:
-        hond.Right()
-    if keys[pygame.K_r]:
-        Change()
+        hond.Blit()
+        # Flip the display to put your work on screen
+        pygame.display.flip()
+        time.sleep(0.05)
 
-    try:
-        JoystickAxis()
-    except:
-        print("No Joysticks connected")
-    
-  
-
-    hond.Blit()
-    # Flip the display to put your work on screen
-    pygame.display.flip()
-    time.sleep(0.02)
-
-
-
-pygame.quit()
+except KeyboardInterrupt:
+    running = 0
+    t1.join()
+    pygame.quit()
