@@ -1,6 +1,7 @@
 import pygame
 import threading
 import time
+import random
 
 # pygame setup
 pygame.init()
@@ -16,7 +17,14 @@ ScreenSize = (1500, 800)
 screen = pygame.display.set_mode(ScreenSize)
 running = True
 
-
+class Apple:
+    def __int__(self):
+        self.apple = pygame.image.load('apple.png')
+        self.applex = random(0,ScreenSize[0])
+        self.appley = random(0,ScreenSize[1])
+    
+    def Blit(self):
+        screen.blit(self.apple, (self.applex, self.appley))
 
 
 
@@ -119,6 +127,7 @@ def Move():
 
 hondA = Player('Dog.jfif','Dog2.jfif',ScreenSize)
 hondB = Player('Dog3.webp','Dog4.webp',ScreenSize)
+apple = Apple()
 hond = hondA
 state = 0
 
@@ -167,7 +176,7 @@ try:
             #print("No Joysticks connected")
             pass
 
-
+        apple.Blit()
         hond.Blit()
         # Flip the display to put your work on screen
         pygame.display.flip()
