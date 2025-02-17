@@ -3,6 +3,8 @@ import threading
 import time
 import random
 
+
+
 # pygame setup
 pygame.init()
 pygame.joystick.init()
@@ -13,15 +15,16 @@ if pygame.joystick.get_count() > 0:
     joystick = pygame.joystick.Joystick(0)
     joystick.init()
 
-ScreenSize = (1500, 800)
+ScreenSize = (1500, 600)
 screen = pygame.display.set_mode(ScreenSize)
 running = True
 
 class Apple:
-    def __int__(self):
-        self.apple = pygame.image.load('apple.png')
-        self.applex = random(0,ScreenSize[0])
-        self.appley = random(0,ScreenSize[1])
+    def __init__(self, image_path,screensize):
+        self.apple = pygame.image.load(image_path)
+        self.apple = pygame.transform.scale(self.apple, ((screensize[1]/4),(screensize[1]/4)))
+        self.applex = random.randrange(0,(ScreenSize[0])-((ScreenSize[1]/4)),screensize[1]/4)
+        self.appley = random.randrange(0,(ScreenSize[1])-((ScreenSize[1]/4)),screensize[1]/4)
     
     def Blit(self):
         screen.blit(self.apple, (self.applex, self.appley))
@@ -41,22 +44,23 @@ class Player:
         self.playerState = 0
         self.circle = 0
         self.MoveState = 'Right'
+        self.screensize = screensize
 
     def Up(self):
-        self.playery -=10
+        self.playery -=(self.screensize[1]/4)
         self.circle = 0
 
     def Down(self):
-        self.playery +=10
+        self.playery +=(self.screensize[1]/4)
         self.circle = 1
 
 
     def Right(self):
-        self.playerx +=10
+        self.playerx +=(self.screensize[1]/4)
         self.circle = 0
 
     def Left(self):
-        self.playerx -=10
+        self.playerx -=(self.screensize[1]/4)
         self.circle = 0
     
     def MoveStateF(self,HelpA):
@@ -84,6 +88,9 @@ class Player:
         elif self.playery <= 0:
             self.playery = 0
 
+        if (self.playerx == apple.applex) and (self.playery == apple.appley):
+            print("apple eaten")
+
         print(self.playerx)
         print((ScreenSize[0])-((ScreenSize[0]/4)))
 
@@ -98,41 +105,51 @@ def Change():
         state = 0
 
 def JoystickAxis():
+    print("hello")
     global MoveState
-    y = joystick.get_axis(0)
-    x = joystick.get_axis(1)
-    if y > 0.5:
-        MoveState = 'Down'
-    elif y < -0.5:
-        MoveState = 'Up'
-    if x > 0.5:
-        MoveState = 'Right'
-    elif x < -0.5:
-        MoveState = 'Left'
+    while running:
+        y = joystick.get_axis(0)
+        x = joystick.get_axis(1)
+        if y > 0.5:
+            MoveState = 'Down'
+            print("Down")
+        elif y < -0.5:
+            MoveState = 'Up'
+            print("uppp")
+        if x > 0.5:
+            MoveState = 'Right'
+        elif x < -0.5:
+            MoveState = 'Left'
             
 def Move():
-    global running 
-    while running:
-        MoveState = hond.MoveState
-        if MoveState == 'Up':
-            hond.Up()
-        elif MoveState == 'Down':
-            hond.Down()
-        elif MoveState == 'Left':
-            hond.Left()
-        elif MoveState == 'Right':
-            hond.Right()
+    MoveState = hond.MoveState
+    if MoveState == 'Up':
+        hond.Up()
+    elif MoveState == 'Down':
+        print("downnnn")
+        hond.Down()
+    elif MoveState == 'Left':
+        hond.Left()
+    elif MoveState == 'Right':
+        hond.Right()
         #print(MoveState)
-        time.sleep(0.052)
+        
 
 hondA = Player('Dog.jfif','Dog2.jfif',ScreenSize)
 hondB = Player('Dog3.webp','Dog4.webp',ScreenSize)
-apple = Apple()
+apple = Apple('apple.png',ScreenSize)
 hond = hondA
 state = 0
 
 t1 = threading.Thread(target=Move, args=())
 t1.start()
+t2 = threading.Thread(target=JoystickAxis, args=())
+try:
+    t2.start()
+except:
+    print("No Joysticks connected")
+    pass
+
 try:
     while running:
 
@@ -143,9 +160,9 @@ try:
             if event.type == pygame.JOYBUTTONDOWN:
                 #print(f"Motion on joystick {event.instance_id}")
                 if event.button == 1:
-                    if event.value > 0.5:
+                    if joystick.get_button(1) > 0.5:
                         Change()
-                    elif event.value < -0.5:
+                    elif joystick.get_button(1) < -0.5:
                         pass
             
             if event.type == pygame.KEYDOWN:
@@ -160,29 +177,16 @@ try:
                     hond.MoveStateF('Right')
                 if keys[pygame.K_r]:
                     Change()
-                        
-
-            
-
         # Fill the screen with a color to wipe away anything from last frame
         screen.fill("Green")
-        # Handle key presses
-
-
-
-        try:
-            JoystickAxis()
-        except:
-            #print("No Joysticks connected")
-            pass
-
+        Move()
         apple.Blit()
         hond.Blit()
-        # Flip the display to put your work on screen
         pygame.display.flip()
-        time.sleep(0.05)
+        time.sleep(0.5)
 
 except KeyboardInterrupt:
     running = 0
     t1.join()
+    t2.join()
     pygame.quit()
