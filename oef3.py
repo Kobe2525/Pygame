@@ -8,9 +8,9 @@ import random
 # pygame setup
 pygame.init()
 
-ScreenSize = (1500, 600)
+ScreenSize = (2400, 1200)
 screen = pygame.display.set_mode(ScreenSize)
-Gridsize = (ScreenSize[1]/8)
+Gridsize = (ScreenSize[1]/16)
 running = True
 
 pygame.joystick.init()
@@ -47,8 +47,8 @@ class Player:
         self.player2 = pygame.image.load(image2_path)
         self.player2 = pygame.transform.scale(self.player2, (Gridsize,Gridsize))
         self.player = self.player1
-        self.playerx = 0
-        self.playery = 0
+        self.playerx = [150,75,0]
+        self.playery = [0,0,0]
         self.playerRotate = 1
         self.playerRotateOld = 1
         self.playerState = "Right"
@@ -56,20 +56,36 @@ class Player:
         self.ScreenSize = ScreenSize
 
     def Up(self):
-        self.playery -=(self.Gridsize)
+        
+        for i in range(len(self.playery)-1,0,-1):
+            self.playery[i] = self.playery[i-1]
+            self.playerx[i] = self.playerx[i-1]
+        self.playery[0] -=(self.Gridsize) 
 
-    def Down(self):
-        self.playery +=(self.Gridsize)
+    def Down(self): 
+           
+        for i in range(len(self.playery)-1,0,-1):
+            self.playery[i] = self.playery[i-1]
+            self.playerx[i] = self.playerx[i-1]
+        self.playery[0] +=(self.Gridsize)
 
     def Right(self):
-        self.playerx +=(self.Gridsize)
+        
+        for i in range(len(self.playerx)-1,0,-1):
+            self.playerx[i] = self.playerx[i-1]
+            self.playery[i] = self.playery[i-1]
+        self.playerx[0] +=(self.Gridsize)
 
     def Left(self):
-        self.playerx -=(self.Gridsize)
+        
+        for i in range(len(self.playerx)-1,0,-1):
+            self.playerx[i] = self.playerx[i-1]
+            self.playery[i] = self.playery[i-1]
+        self.playerx[0] -=(self.Gridsize)
 
     def MovePlayerState(self):
         global x,y
-        print(x,y)
+        #print(x,y)
         if y > 0.5:
             self.playerState = "Down"
             self.playerRotate = 2
@@ -105,25 +121,28 @@ class Player:
         self.playerRotateOld = self.playerRotate
 
     def CheckLocation(self):
-        if self.playerx >= ((ScreenSize[0])-(Gridsize)):
-            self.playerx = ScreenSize[0]-(Gridsize)
-        elif self.playerx <= 0:
-            self.playerx = 0
+        for i in range(0,len(self.playery),1):
+            if self.playerx[i] >= ((ScreenSize[0])-(Gridsize)):
+                self.playerx[i] = ScreenSize[0]-(Gridsize)
+            elif self.playerx[i] <= 0:
+                self.playerx[i] = 0
+            if self.playery[i] >= ((ScreenSize[1])-(Gridsize)):
+                self.playery[i] = ScreenSize[1]-Gridsize
+            elif self.playery[i] <= 0:
+                self.playery[i] = 0
 
-        if self.playery >= ((ScreenSize[1])-(Gridsize)):
-            self.playery = ScreenSize[1]-Gridsize
-        elif self.playery <= 0:
-            self.playery = 0
-
-        if (self.playerx == apple.applex) and (self.playery == apple.appley):
-            apple.Random()
-            print("apple eaten")
+            if (self.playerx[i] == apple.applex) and (self.playery[i] == apple.appley):
+                apple.Random()
+                print("apple eaten")
 
     def Blit(self):
         # print("x = ",self.playerx)
         # print("y = ",self.playery)
         self.CheckLocation()
-        screen.blit(self.player, (self.playerx, self.playery))
+        for i in range(0,len(self.playery),1):
+            screen.blit(self.player, (self.playerx[i], self.playery[i]))
+        print("x= ",self.playerx[0],",",self.playerx[1],",",self.playerx[2])
+        print("y= ",self.playery[0],",",self.playery[1],",",self.playery[2])
 
 def Change():
     global player, playerA, playerB, state
@@ -189,7 +208,8 @@ try:
         apple.Blit()
         player.Blit()
         pygame.display.flip()
-        time.sleep(0.5)
+        #print("flipped")
+        time.sleep(0.1)
 
 except KeyboardInterrupt:
     running = 0
