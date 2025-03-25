@@ -115,10 +115,13 @@ class Player:
         elif self.playerState == "Left":
             self.Left()
         
-
     def RotatePlayer(self):
         self.player = pygame.transform.rotate(self.player,90*(self.playerRotateOld - self.playerRotate))
         self.playerRotateOld = self.playerRotate
+
+    def Append(self):
+        self.playerx.append(self.playerx[len(self.playerx)-1])
+        self.playery.append(self.playery[len(self.playery)-1])
 
     def CheckLocation(self):
         for i in range(0,len(self.playery),1):
@@ -133,6 +136,7 @@ class Player:
 
             if (self.playerx[i] == apple.applex) and (self.playery[i] == apple.appley):
                 apple.Random()
+                self.Append()
                 print("apple eaten")
 
     def Blit(self):
@@ -162,11 +166,14 @@ def GetJoystickAxis(): #Running in thread
 
 playerA = Player('f22gif2.gif','Dog2.jfif',Gridsize,ScreenSize)
 playerB = Player('Dog3.webp','Dog4.webp',Gridsize,ScreenSize)
-apple = Apple('apple.png',Gridsize,ScreenSize)
+apple = Apple('balloon.png',Gridsize,ScreenSize)
 player = playerA
 state = 0
 y=0
 x=0
+
+ImageBackground = pygame.image.load('wolken.jpg')
+ImageBackground = pygame.transform.scale(ImageBackground, ScreenSize)
 
 t1 = threading.Thread(target=GetJoystickAxis, args=())
 try:
@@ -204,6 +211,7 @@ try:
                     Change()
         # Fill the screen with a color to wipe away anything from last frame
         screen.fill("Green")
+        screen.blit(ImageBackground,(0,0))
         player.MovePlayerState()
         apple.Blit()
         player.Blit()
