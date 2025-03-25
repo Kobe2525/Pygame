@@ -10,6 +10,7 @@ pygame.init()
 
 ScreenSize = (1500, 600)
 screen = pygame.display.set_mode(ScreenSize)
+Gridsize = (ScreenSize[1]/8)
 running = True
 
 pygame.joystick.init()
@@ -21,16 +22,17 @@ if pygame.joystick.get_count() > 0:
 
 
 class Apple:
-    def __init__(self, image_path,screensize):
+    def __init__(self, image_path,Gridsize,ScreenSize):
         self.apple = pygame.image.load(image_path)
-        self.apple = pygame.transform.scale(self.apple, ((screensize[1]/4),(screensize[1]/4)))
-        self.applex = int(random.randrange(0,int((screensize[0])-((screensize[1]/4))),int(screensize[1]/4)))
-        self.appley = int(random.randrange(0,int((screensize[1])-((screensize[1]/4))),int(screensize[1]/4)))
-        self.screensize = screensize
+        self.apple = pygame.transform.scale(self.apple, (Gridsize,Gridsize))
+        self.applex = int(random.randrange(0,int((ScreenSize[0])-(Gridsize)),int(Gridsize)))
+        self.appley = int(random.randrange(0,int((ScreenSize[1])-(Gridsize)),int(Gridsize)))
+        self.ScreenSize = ScreenSize
+        self.Gridsize = Gridsize
     
     def Random(self):
-        self.applex = int(random.randrange(0,int((self.screensize[0])-((self.screensize[1]/4))),int(self.screensize[1]/4)))
-        self.appley = int(random.randrange(0,int((self.screensize[1])-((self.screensize[1]/4))),int(self.screensize[1]/4)))
+        self.applex = int(random.randrange(0,int((self.ScreenSize[0])-((Gridsize))),int(Gridsize)))
+        self.appley = int(random.randrange(0,int((self.ScreenSize[1])-((Gridsize))),int(Gridsize)))
 
     def Blit(self):
         screen.blit(self.apple, (self.applex, self.appley))
@@ -38,31 +40,32 @@ class Apple:
 
 
 class Player:
-    def __init__(self, image_path, image2_path, screensize):
+    def __init__(self, image_path, image2_path, Gridsize,ScreenSize):
 
         self.player1 = pygame.image.load(image_path)
-        self.player1 = pygame.transform.scale(self.player1, ((screensize[1]/4),(screensize[1]/4)))
+        self.player1 = pygame.transform.scale(self.player1, (Gridsize,Gridsize))
         self.player2 = pygame.image.load(image2_path)
-        self.player2 = pygame.transform.scale(self.player2, ((screensize[1]/4),(screensize[1]/4)))
+        self.player2 = pygame.transform.scale(self.player2, (Gridsize,Gridsize))
         self.player = self.player1
         self.playerx = 0
         self.playery = 0
         self.playerRotate = 1
         self.playerRotateOld = 1
         self.playerState = "Right"
-        self.screensize = screensize
+        self.Gridsize = Gridsize
+        self.ScreenSize = ScreenSize
 
     def Up(self):
-        self.playery -=(self.screensize[1]/4)
+        self.playery -=(self.Gridsize)
 
     def Down(self):
-        self.playery +=(self.screensize[1]/4)
+        self.playery +=(self.Gridsize)
 
     def Right(self):
-        self.playerx +=(self.screensize[1]/4)
+        self.playerx +=(self.Gridsize)
 
     def Left(self):
-        self.playerx -=(self.screensize[1]/4)
+        self.playerx -=(self.Gridsize)
 
     def MovePlayerState(self):
         global x,y
@@ -100,18 +103,15 @@ class Player:
     def RotatePlayer(self):
         self.player = pygame.transform.rotate(self.player,90*(self.playerRotateOld - self.playerRotate))
         self.playerRotateOld = self.playerRotate
-        # for i in range(0,4):
-        #     if self.playerRotate != i:
-        #         self.player = pygame.transform.rotate(self.player,90)
 
     def CheckLocation(self):
-        if self.playerx >= ((ScreenSize[0])-((ScreenSize[1]/4))):
-            self.playerx = ScreenSize[0]-(ScreenSize[1]/4)
+        if self.playerx >= ((ScreenSize[0])-(Gridsize)):
+            self.playerx = ScreenSize[0]-(Gridsize)
         elif self.playerx <= 0:
             self.playerx = 0
 
-        if self.playery >= ((ScreenSize[1])-((ScreenSize[1]/4))):
-            self.playery = ScreenSize[1]-(ScreenSize[1]/4)
+        if self.playery >= ((ScreenSize[1])-(Gridsize)):
+            self.playery = ScreenSize[1]-Gridsize
         elif self.playery <= 0:
             self.playery = 0
 
@@ -141,9 +141,9 @@ def GetJoystickAxis(): #Running in thread
         y = joystick.get_axis(1)
         x = joystick.get_axis(0)    
 
-playerA = Player('f22gif2.gif','Dog2.jfif',ScreenSize)
-playerB = Player('Dog3.webp','Dog4.webp',ScreenSize)
-apple = Apple('apple.png',ScreenSize)
+playerA = Player('f22gif2.gif','Dog2.jfif',Gridsize,ScreenSize)
+playerB = Player('Dog3.webp','Dog4.webp',Gridsize,ScreenSize)
+apple = Apple('apple.png',Gridsize,ScreenSize)
 player = playerA
 state = 0
 y=0
