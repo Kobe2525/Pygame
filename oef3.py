@@ -124,6 +124,7 @@ class Player:
         self.playery.append(self.playery[len(self.playery)-1])
 
     def CheckLocation(self):
+        global running
         for i in range(0,len(self.playery),1):
             if self.playerx[i] >= ((ScreenSize[0])-(Gridsize)):
                 self.playerx[i] = ScreenSize[0]-(Gridsize)
@@ -133,6 +134,11 @@ class Player:
                 self.playery[i] = ScreenSize[1]-Gridsize
             elif self.playery[i] <= 0:
                 self.playery[i] = 0
+
+            for j in range(0,len(self.playery),1):
+                if(self.playerx[i] == self.playerx[j] and self.playery[i] == self.playery[j] and i!=j):
+                    running = 0
+                    print("gameover")
 
             if (self.playerx[i] == apple.applex) and (self.playery[i] == apple.appley):
                 apple.Random()
@@ -217,7 +223,17 @@ try:
         player.Blit()
         pygame.display.flip()
         #print("flipped")
-        time.sleep(0.1)
+        time.sleep(0.25)
+    screen.fill("Green") 
+    font = pygame.font.SysFont('arial', 30) 
+    line1 = font.render(f"Game is over! Your score is {len(player.playerx)-3}", True, (255, 255, 255)) 
+    screen.blit(line1, (200, 300)) 
+    line2 = font.render("To play again press Enter. To exit press Escape!", True, (255, 255, 255)) 
+    screen.blit(line2,(200, 350)) 
+    pygame.display.flip() 
+    time.sleep(999)
+
+    
 
 except KeyboardInterrupt:
     running = 0
