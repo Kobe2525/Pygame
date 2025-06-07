@@ -1,0 +1,73 @@
+import pygame
+
+# Function to calculate screen dimensions with a 16:9 aspect ratio
+def calculate_screen_size(base_width):
+    aspect_ratio = 16 / 9
+    width = base_width
+    height = int(base_width / aspect_ratio)
+    return width, height
+
+# Initialize Pygame
+pygame.init()
+
+# Screen dimensions (set base width here)
+BASE_WIDTH = 800
+WIDTH, HEIGHT = calculate_screen_size(BASE_WIDTH)
+screen = pygame.display.set_mode((WIDTH, HEIGHT))
+pygame.display.set_caption("Basic Platformer")
+
+# Colors
+WHITE = (255, 255, 255)
+BLUE = (0, 0, 255)
+
+# Clock for controlling frame rate
+clock = pygame.time.Clock()
+
+# Player attributes
+player_width, player_height = 50, 50
+player_x, player_y = WIDTH // 2, HEIGHT - player_height - 10
+player_speed = 5
+jump_height = 15
+gravity = 1
+velocity_y = 0
+is_jumping = False
+
+# Game loop
+running = True
+while running:
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            running = False
+
+    # Get keys
+    keys = pygame.key.get_pressed()
+    if keys[pygame.K_LEFT]:
+        player_x -= player_speed
+    if keys[pygame.K_RIGHT]:
+        player_x += player_speed
+    if keys[pygame.K_SPACE] and not is_jumping:
+        is_jumping = True
+        velocity_y = -jump_height
+
+    # Apply gravity
+    if is_jumping:
+        player_y += velocity_y
+        velocity_y += gravity
+        if player_y >= HEIGHT - player_height - 10:
+            player_y = HEIGHT - player_height - 10
+            is_jumping = False
+
+    # Fill screen
+    screen.fill(WHITE)
+
+    # Draw player
+    pygame.draw.rect(screen, BLUE, (player_x, player_y, player_width, player_height))
+
+    # Update display
+    pygame.display.flip()
+
+    # Control frame rate
+    clock.tick(60)
+
+# Quit Pygame
+pygame.quit()
