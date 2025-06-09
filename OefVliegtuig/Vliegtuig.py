@@ -17,11 +17,15 @@ jet_path = os.path.join("IMG", "F-15-Fighter-Jet.png")
 enemy_path = os.path.join("IMG", "E_plane.webp")
 background = pygame.image.load(bg_path)
 background = pygame.transform.scale(background, (WIDTH, HEIGHT))
-jet = pygame.image.load(jet_path)
+jet = pygame.image.load(jet_path).convert_alpha()
 jet = pygame.transform.scale(jet, (120, 80))
-enemy = pygame.image.load(enemy_path)
+enemy = pygame.image.load(enemy_path).convert_alpha()
 enemy = pygame.transform.scale(enemy, (100, 70))
 enemy = pygame.transform.rotate(enemy, 180)  # Turn enemy 180 degrees
+
+# Create masks for pixel-perfect collision
+jet_mask = pygame.mask.from_surface(jet)
+enemy_mask = pygame.mask.from_surface(enemy)
 
 # Jet starting position
 jet_x = WIDTH // 2 - jet.get_width() // 2
@@ -31,7 +35,7 @@ jet_speed = 15
 # Background scroll variables
 bg_y1 = 0
 bg_y2 = -HEIGHT
-bg_scroll_speed = 4
+bg_scroll_speed = 1
 
 # Bullet variables
 bullets = []
@@ -42,7 +46,7 @@ bullet_color = (255, 255, 0)  # Yellow
 # Enemy starting position and speed
 enemy_x = random.randint(0, WIDTH - enemy.get_width())
 enemy_y = -enemy.get_height()
-enemy_speed = 5
+enemy_speed = 2
 
 # Score variable
 score = 0
@@ -92,12 +96,18 @@ while running:
         # Remove bullets that are off-screen
         bullets = [b for b in bullets if b[1] > -bullet_height]
 
-        # Check for bullet-enemy collision
+        # Check for bullet-enemy collision (using mask)
         enemy_rect = pygame.Rect(enemy_x, enemy_y, enemy.get_width(), enemy.get_height())
         hit = False
         for bullet in bullets:
             bullet_rect = pygame.Rect(bullet[0], bullet[1], bullet_width, bullet_height)
-            if enemy_rect.colliderect(bullet_rect):
+            # Create a simple surface for the bullet
+            bullet_surf = pygame.Surface((bullet_width, bullet_height), pygame.SRCALPHA)
+            pygame.draw.rect(bullet_surf, (255,255,255,255), (0,0,bullet_width,bullet_height))
+            bullet_mask = pygame.mask.from_surface(bullet_surf)
+            # Calculate offset
+            offset = (bullet_rect.x - enemy_rect.x, bullet_rect.y - enemy_rect.y)
+            if enemy_mask.overlap(bullet_mask, offset):
                 hit = True
                 bullets.remove(bullet)
                 break
@@ -111,9 +121,10 @@ while running:
             enemy_x = random.randint(0, WIDTH - enemy.get_width())
             enemy_y = -enemy.get_height()
 
-        # Check for jet-enemy collision or enemy out of screen (lose)
+        # Check for jet-enemy collision (using mask) or enemy out of screen (lose)
         jet_rect = pygame.Rect(jet_x, jet_y, jet.get_width(), jet.get_height())
-        if enemy_rect.colliderect(jet_rect) or enemy_y > HEIGHT:
+        offset = (enemy_rect.x - jet_rect.x, enemy_rect.y - jet_rect.y)
+        if jet_mask.overlap(enemy_mask, offset) or enemy_y > HEIGHT:
             game_over = True
 
     # Draw everything
