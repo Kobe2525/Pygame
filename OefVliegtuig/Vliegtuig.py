@@ -51,6 +51,20 @@ enemy_speed = 2
 # Score variable
 score = 0
 
+# Power-up variables
+powerups = []
+POWERUP_WIDTH, POWERUP_HEIGHT = 40, 40
+POWERUP_SPEED = 4
+POWERUP_TYPES = ["life", "double"]
+powerup_images = {
+    "life": pygame.transform.scale(pygame.image.load(os.path.join("IMG", "life.webp")), (POWERUP_WIDTH, POWERUP_HEIGHT)),
+    "double": pygame.transform.scale(pygame.image.load(os.path.join("IMG", "double.png")), (POWERUP_WIDTH, POWERUP_HEIGHT))
+}
+lives = 1
+double_shoot = False
+double_shoot_timer = 0
+DOUBLE_SHOOT_DURATION = 300  # frames (~5 seconds at 60 FPS)
+
 # Main game loop
 clock = pygame.time.Clock()
 running = True
@@ -78,9 +92,17 @@ while running:
             running = False
         if not game_over and event.type == pygame.KEYDOWN:
             if event.key == pygame.K_SPACE:
-                bullet_x = jet_x + jet.get_width() // 2 - bullet_width // 2
-                bullet_y = jet_y
-                bullets.append([bullet_x, bullet_y])
+                if double_shoot:
+                    # Shoot two bullets
+                    bullet_x1 = jet_x + jet.get_width() // 2 - bullet_width // 2 - 15
+                    bullet_x2 = jet_x + jet.get_width() // 2 - bullet_width // 2 + 15
+                    bullet_y = jet_y
+                    bullets.append([bullet_x1, bullet_y])
+                    bullets.append([bullet_x2, bullet_y])
+                else:
+                    bullet_x = jet_x + jet.get_width() // 2 - bullet_width // 2
+                    bullet_y = jet_y
+                    bullets.append([bullet_x, bullet_y])
         if game_over and event.type == pygame.KEYDOWN:
             if event.key in (pygame.K_UP, pygame.K_w):
                 selected_option = (selected_option - 1) % 2
@@ -101,6 +123,10 @@ while running:
                     jet_speed = 15
                     score = 0
                     game_over = False
+                    powerups = []
+                    lives = 1
+                    double_shoot = False
+                    double_shoot_timer = 0
                 elif selected_option == 1:
                     running = False
 
@@ -150,6 +176,14 @@ while running:
                 break
         if hit:
             score += 1
+            # Chance to spawn a powerup (20%)
+            if random.random() < 0.2:
+                ptype = random.choice(POWERUP_TYPES)
+                powerups.append({
+                    "type": ptype,
+                    "x": enemy_x + enemy.get_width() // 2 - POWERUP_WIDTH // 2,
+                    "y": enemy_y + enemy.get_height() // 2 - POWERUP_HEIGHT // 2
+                })
             # Increase speed every 10 points
             if score % 10 == 0:
                 enemy_speed += 1
@@ -162,7 +196,37 @@ while running:
         jet_rect = pygame.Rect(jet_x, jet_y, jet.get_width(), jet.get_height())
         offset = (enemy_rect.x - jet_rect.x, enemy_rect.y - jet_rect.y)
         if jet_mask.overlap(enemy_mask, offset) or enemy_y > HEIGHT:
-            game_over = True
+            lives -= 1
+            if lives <= 0:
+                game_over = True
+            else:
+                # Respawn enemy and reset position
+                enemy_x = random.randint(0, WIDTH - enemy.get_width())
+                enemy_y = -enemy.get_height()
+
+        # Move powerups
+        for p in powerups:
+            p["y"] += POWERUP_SPEED
+        # Remove off-screen powerups
+        powerups = [p for p in powerups if p["y"] < HEIGHT]
+
+        # Powerup collision with jet
+        jet_rect = pygame.Rect(jet_x, jet_y, jet.get_width(), jet.get_height())
+        for p in powerups[:]:
+            powerup_rect = pygame.Rect(p["x"], p["y"], POWERUP_WIDTH, POWERUP_HEIGHT)
+            if jet_rect.colliderect(powerup_rect):
+                if p["type"] == "life":
+                    lives += 1
+                elif p["type"] == "double":
+                    double_shoot = True
+                    double_shoot_timer = DOUBLE_SHOOT_DURATION
+                powerups.remove(p)
+
+        # Double shoot timer
+        if double_shoot:
+            double_shoot_timer -= 1
+            if double_shoot_timer <= 0:
+                double_shoot = False
 
     # Draw everything
     screen.blit(background, (0, bg_y1))
@@ -171,11 +235,16 @@ while running:
     screen.blit(enemy, (enemy_x, enemy_y))
     for bullet in bullets:
         pygame.draw.rect(screen, bullet_color, (bullet[0], bullet[1], bullet_width, bullet_height))
+    # Draw powerups
+    for p in powerups:
+        screen.blit(powerup_images[p["type"]], (p["x"], p["y"]))
 
-    # Draw score
+    # Draw score and lives
     font = pygame.font.SysFont(None, 48)
     score_text = font.render(f"Score: {score}", True, (255, 255, 255))
+    lives_text = font.render(f"Lives: {lives}", True, (0, 255, 0))
     screen.blit(score_text, (20, 20))
+    screen.blit(lives_text, (20, 70))
 
     if game_over:
         draw_game_over(selected_option)
