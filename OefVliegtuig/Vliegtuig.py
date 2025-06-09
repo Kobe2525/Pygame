@@ -55,6 +55,21 @@ score = 0
 clock = pygame.time.Clock()
 running = True
 game_over = False
+
+def draw_game_over(selected_option):
+    font = pygame.font.SysFont(None, 120)
+    text = font.render("GAME OVER", True, (255, 0, 0))
+    screen.blit(text, (WIDTH // 2 - text.get_width() // 2, HEIGHT // 2 - 200))
+
+    font_small = pygame.font.SysFont(None, 72)
+    options = ["Try Again", "Quit Game"]
+    for i, option in enumerate(options):
+        color = (255, 255, 0) if i == selected_option else (255, 255, 255)
+        opt_text = font_small.render(option, True, color)
+        screen.blit(opt_text, (WIDTH // 2 - opt_text.get_width() // 2, HEIGHT // 2 + i * 100))
+
+selected_option = 0  # 0 = Try Again, 1 = Quit Game
+
 while running:
     clock.tick(60)  # 60 FPS
 
@@ -66,6 +81,28 @@ while running:
                 bullet_x = jet_x + jet.get_width() // 2 - bullet_width // 2
                 bullet_y = jet_y
                 bullets.append([bullet_x, bullet_y])
+        if game_over and event.type == pygame.KEYDOWN:
+            if event.key in (pygame.K_UP, pygame.K_w):
+                selected_option = (selected_option - 1) % 2
+            if event.key in (pygame.K_DOWN, pygame.K_s):
+                selected_option = (selected_option + 1) % 2
+            if event.key == pygame.K_RETURN:
+                if selected_option == 0:
+                    # Reset game state
+                    jet_x = WIDTH // 2 - jet.get_width() // 2
+                    jet_y = HEIGHT - jet.get_height() - 30
+                    bullets = []
+                    enemy_x = random.randint(0, WIDTH - enemy.get_width())
+                    enemy_y = -enemy.get_height()
+                    enemy_speed = 2
+                    bg_y1 = 0
+                    bg_y2 = -HEIGHT
+                    bg_scroll_speed = 1
+                    jet_speed = 15
+                    score = 0
+                    game_over = False
+                elif selected_option == 1:
+                    running = False
 
     if not game_over:
         # Key handling
@@ -141,9 +178,7 @@ while running:
     screen.blit(score_text, (20, 20))
 
     if game_over:
-        font = pygame.font.SysFont(None, 120)
-        text = font.render("GAME OVER", True, (255, 0, 0))
-        screen.blit(text, (WIDTH // 2 - text.get_width() // 2, HEIGHT // 2 - text.get_height() // 2))
+        draw_game_over(selected_option)
 
     pygame.display.flip()
 
