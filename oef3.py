@@ -8,9 +8,9 @@ import random
 # pygame setup
 pygame.init()
 
-ScreenSize = (2400, 1200)
+ScreenSize = (1500,600)
 screen = pygame.display.set_mode(ScreenSize)
-Gridsize = (ScreenSize[1]/16)
+Gridsize = (ScreenSize[1]/8)
 running = True
 
 pygame.joystick.init()
